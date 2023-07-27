@@ -2,12 +2,9 @@ package ec.edu.com.examencarlosyupa.controller;
 
 import java.util.List;
 
+import ec.edu.com.examencarlosyupa.dto.PagoRolRS;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import ec.edu.com.examencarlosyupa.dto.EmpleadoPagoRQ;
 import ec.edu.com.examencarlosyupa.dto.PagoRolRQ;
@@ -31,16 +28,12 @@ public class PagoRolController {
         return ResponseEntity.ok("Pago Rol creado correctamente");
     }
 
-    /*
-     * @GetMapping
-     * public ResponseEntity<List<PagoRol>> obtenerEmpleados() {
-     * 
-     * return ResponseEntity.ok(this.pagoRolService.obtenerEmpleados());
-     * }
-     */
-    public ResponseEntity<?> validarPagoRol(String mes, String ruc, EmpleadoPagoRQ empleadoPagoRQ) {
-        this.pagoRolService.validarPagoRol(mes, ruc, empleadoPagoRQ);
-        return ResponseEntity.ok("Pago Rol validado correctamente");
+    @PutMapping("/validar-pago-rol")
+    public ResponseEntity<PagoRolRS> validatePayRolePayment(@RequestParam String mes, @RequestParam String ruc ,@RequestBody EmpleadoPagoRQ empleadoPagoRQ) {
+        PagoRolRS rs = this.pagoRolService.validarPagoRol(mes, ruc, empleadoPagoRQ);
+        return ResponseEntity.ok(rs);
     }
+
+
 
 }

@@ -9,6 +9,6 @@ import lombok.Data;
 @Builder
 public class EmpleadoPagoRQ {
 
-   private String numeroCuenta;
+    private String numeroCuenta;
     private BigDecimal valor;
 }

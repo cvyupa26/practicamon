@@ -6,9 +6,8 @@ import lombok.Data;
 @Data
 @Builder
 public class Empleado {
-    
 
-    private Integer cedulaIdentidad;
+    private String cedulaIdentidad;
     private String apellidos;
     private String nombres;
     private String numeroDeCuenta;

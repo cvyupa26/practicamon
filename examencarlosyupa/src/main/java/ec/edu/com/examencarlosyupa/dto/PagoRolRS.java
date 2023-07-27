@@ -1,7 +1,7 @@
 package ec.edu.com.examencarlosyupa.dto;
 
 import java.math.BigDecimal;
-import java.sql.Date;
+import java.util.Date;
 
 import ec.edu.com.examencarlosyupa.model.EmpleadoPago;
 import lombok.Builder;

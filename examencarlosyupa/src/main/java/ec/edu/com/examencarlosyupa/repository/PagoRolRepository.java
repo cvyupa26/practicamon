@@ -8,12 +8,15 @@ import org.springframework.data.mongodb.repository.Query;
 
 import ec.edu.com.examencarlosyupa.model.PagoRol;
 
-public interface PagoRolRepository extends MongoRepository<PagoRol,String> {
+public interface PagoRolRepository extends MongoRepository<PagoRol, String> {
     @Query(value = "{}", fields = "{'empleadoPago': 1}")
     List<PagoRol> getAllEmpleados();
 
-  List<PagoRol> findByRucEmpresaAndMes(String rucEmpresa, String mes);
-  // PagoRol findByRucEmpresaAndMes(String rucEmpresa, String mes);
+    @Query(value = "{'empleadoPago.numeroCuenta': ?0}", fields = "{'mes': 1, 'rucEmpresa': 1, 'fechaProceso': 1, 'cuentaPrincipal': 1,'valorTotal': 1,'empleadoPago': 1}")
+    PagoRol findByCuentaEmpleado(String numeroCuenta);
 
-  Optional<PagoRol> findById(String id);
+    List<PagoRol> findByRucEmpresaAndMes(String rucEmpresa, String mes);
+    // PagoRol findByRucEmpresaAndMes(String rucEmpresa, String mes);
+
+    Optional<PagoRol> findById(String id);
 }

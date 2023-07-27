@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+import ec.edu.com.examencarlosyupa.model.Empleado;
 import org.springframework.stereotype.Service;
 
 import ec.edu.com.examencarlosyupa.dto.EmpleadoPagoRQ;
@@ -35,7 +36,7 @@ public class PagoRolService {
             for (PagoRol pagos : pagoRolList) {
                 pagosCounter = pagosCounter + pagos.getEmpleadoPago().getValor().intValue();
             }
-            pagoRol.setValorTotal(BigDecimal.valueOf(pagosCounter));
+            pagoRol.setValorTotal(BigDecimal.valueOf(pagosCounter.doubleValue()));
             pagoRol.setValorReal(BigDecimal.valueOf(0.0));
             pagoRol.getEmpleadoPago().setEstado("PEN");
             this.pagoRolRepository.save(pagoRol);
@@ -46,75 +47,43 @@ public class PagoRolService {
 
     public PagoRolRS validarPagoRol(String mes, String ruc, EmpleadoPagoRQ empleadoPagoRQ) {
 
-        Integer totaltransacciones = 0;
-        Integer errores = 0;
-        float valoRe = 0;
+        Integer totalTrx = 0;
+        Integer errors = 0;
+        Integer realValCounter = 0;
 
-        List<PagoRol> pagoRolList = this.pagoRolRepository.findByRucEmpresaAndMes(ruc, mes);
-        if (pagoRolList.isEmpty()) {
-            throw new RuntimeException("No existe el pago rol");
-        }
-        List<Empresa> empresaList = this.empresaRepository.findEmployeesByEmpresaRuc(ruc);
-        Integer sizeEmpresaList = empresaList.size();
+        PagoRol pagoRolTmp = this.pagoRolRepository.findByCuentaEmpleado(empleadoPagoRQ.getNumeroCuenta());
+        Empresa empresaTmp = this.empresaRepository.findEmpresaByEmpleados(empleadoPagoRQ.getNumeroCuenta());
 
-        for (Empresa empleado : empresaList) {
-
-            for (int i = 0; i < sizeEmpresaList; i++) {
-                if (empleado.getEmpleados().get(i).getNumeroDeCuenta().equals(empleadoPagoRQ.getNumeroCuenta())) {
-
-                    for (PagoRol empPagoRolExist : pagoRolList) {
-                        Optional<PagoRol> pagoRol = this.pagoRolRepository.findById(empPagoRolExist.getId());
-                        if(pagoRol.isPresent()){
-                            valoRe = pagoRol.get().getValorReal().floatValue();
-                        }
-                        empPagoRolExist.getEmpleadoPago().setEstado("VAL");
-                        totaltransacciones++;
-                     
-                    }
-
-                } else {
-                    for (PagoRol empPagoRolNoEx : pagoRolList) {
-
-                        empPagoRolNoEx.getEmpleadoPago().setEstado("BAD");
-                        errores++;
+        if(pagoRolTmp == null){
+            throw new RuntimeException("No existe el rol de pagos");
+        }else{
+            if (pagoRolTmp.getMes().equals(mes) && pagoRolTmp.getRucEmpresa().equals(ruc)) {
+                for(Empleado empleado: empresaTmp.getEmpleados()){
+                    if (empleado.getNumeroDeCuenta().equals(pagoRolTmp.getEmpleadoPago().getNumeroCuenta())){
+                        pagoRolTmp.getEmpleadoPago().setEstado("VAL");
+                        totalTrx++;
+                        realValCounter = realValCounter + pagoRolTmp.getEmpleadoPago().getValor().intValue();
+                        pagoRolTmp.setValorReal(BigDecimal.valueOf(realValCounter));
+                    }else{
+                        pagoRolTmp.getEmpleadoPago().setEstado("BAD");
+                        errors++;
                     }
                 }
+                this.pagoRolRepository.save(pagoRolTmp);
+                PagoRolRS response = transformPagoRolRS(pagoRolTmp);
+                response.setTotalTransacciones(totalTrx);
+                response.setErrores(errors);
+                return response;
+            } else {
+                throw new RuntimeException("No existe el rol de pagos");
             }
+
 
         }
 
-        return null;
 
     }
 
-    /*
-     * public PagoRolRS validarPagoRol(String mes, String ruc) {
-     * 
-     * Empresa empresa = this.empresaRepository.findByRuc(ruc);
-     * PagoRol pagoRol = this.pagoRolRepository.findByRucEmpresaAndMes(ruc, mes);
-     * 
-     * Boolean verifi = null;
-     * Integer totaltransacciones = 0;
-     * Integer errores = 0;
-     * BigDecimal valorReal = BigDecimal.valueOf(0.0);
-     * 
-     * for (EmpleadoPago empPago : pagoRol.getEmpleadoPago()) {
-     * 
-     * if (empPago.getEstado().equals("PEN")) {
-     * empPago.setEstado("VAL");
-     * empPago.setValor(empPago.getValor());
-     * totaltransacciones++;
-     * valorReal = valorReal.add(empPago.getValor());
-     * verifi = true;
-     * } else {
-     * errores++;
-     * verifi = false;
-     * }
-     * }
-     * 
-     * 
-     * }
-     */
 
     public List<PagoRol> obtenerEmpleados() {
         return this.pagoRolRepository.getAllEmpleados();
@@ -130,6 +99,19 @@ public class PagoRolService {
                 .empleadoPago(rq.getEmpleadoPago())
                 .build();
         return pagoRol;
+    }
+
+    public PagoRolRS transformPagoRolRS(PagoRol pagoRol) {
+        PagoRolRS pagoRolRS = PagoRolRS
+                .builder()
+                .mes(pagoRol.getMes())
+                .fechaProceso(pagoRol.getFechaProceso())
+                .rucEmpresa(pagoRol.getRucEmpresa())
+                .cuentaPrincipal(pagoRol.getCuentaPrincipal())
+                .valorTotal(pagoRol.getValorTotal())
+                .valorReal(pagoRol.getValorReal())
+                .build();
+        return pagoRolRS;
     }
 
 }
