@@ -45,6 +45,14 @@ public class EmpresaService {
         return empresa;
     }
 
+        public EmpleadoRS responseEmpleadoRS(Empleado rs) {
+        EmpleadoRS empleadoRS = EmpleadoRS.builder()
+                .cedulaIdentidad(rs.getCedulaIdentidad()) 
+                .numeroDeCuenta(rs.getNumeroDeCuenta())
+                .build();
+                return empleadoRS;
+    }
+
     public EmpleadoRS responseEmpleadoRS(Empleado rs) {
         EmpleadoRS empleadoRS = EmpleadoRS.builder()
                 .cedulaIdentidad(rs.getCedulaIdentidad()) 
